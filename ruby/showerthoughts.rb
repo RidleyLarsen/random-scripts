@@ -11,7 +11,7 @@ end
 
 def main
     puts "Grabbing shower thoughts."
-    base_uri = "https://www.reddit.com/r/showerthoughts/top.json?t=all,limit=100"
+    base_uri = "https://www.reddit.com/r/showerthoughts/top.json?t=all&limit=100"
     response = Unirest.get base_uri
     db = harvest_titles response.body["data"]
     while db.length < 500

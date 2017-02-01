@@ -10,17 +10,19 @@ def harvest_titles(jsonobj):
     '''
     lst = []
     try:
+        print(len(jsonobj["data"]["children"]))
         for post in jsonobj["data"]["children"]:
             # Encode the post titles with ascii for compatibility.
             title = post["data"]["title"].encode('ascii', 'ignore')
             lst.append(title)
-    except KeyError: # Either no data or no children.
-        pass
+    except Exception as e: # Either no data or no children.
+        print(e)
+        print(jsonobj)
     return lst
 
 def main():
     print("Grabbing shower thoughts.")
-    api_uri = "https://www.reddit.com/r/showerthoughts/top.json?t=all,limit=100"
+    api_uri = "https://www.reddit.com/r/showerthoughts/top.json?t=all&limit=100"
     r = requests.get(api_uri).json()
     db = harvest_titles(r)
     while len(db) < 500:
