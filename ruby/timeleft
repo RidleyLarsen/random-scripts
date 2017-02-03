@@ -1,11 +1,29 @@
-#!/Users/ridleylarsen/.rvm/rubies/ruby-2.3.3/bin/ruby
-
+#!/usr/bin/env ruby
+require 'json'
 require 'unirest'
 require 'time'
+require 'optparse'
 
 def main()
-  api_key = 'CHANGEME'
-  time_goal = 8 * 60 * 60  # 8 hours or 28800 seconds.
+  options = {}
+  f = open(File.expand_path('~/.timeleft.config'))
+  jsonobj = JSON.load(f)
+  api_key = jsonobj['TOGGL_API_KEY']
+  if jsonobj.has_key? "hours"
+    hours = jsonobj["hours"]
+  else
+    hours = 8
+  end
+
+  OptionParser.new do |opts|
+    opts.banner = "Usage: timeleft.rb [options]"
+
+    opts.on("-h HOURS", "--hours=HOURS", "Hours") do |h|
+      hours = h
+    end
+  end.parse!
+
+  time_goal = hours * 60 * 60  # 8 hours or 28800 seconds.
   now = Time.now
   puts "It is now#{now.strftime("%l:%M %p")}."
   t = Time.new(now.year, now.month, now.day).iso8601
@@ -31,13 +49,19 @@ def main()
   end
   billable_hours = billable_duration / 60 / 60
   billable_minutes = (billable_duration / 60) % 60
-  percent_finished = (billable_duration / time_goal) * 100
-  hours_remaining = (time_goal - billable_duration) / 60 / 60
-  minutes_remaining = (time_goal - billable_duration) / 60 % 60
-  finished_at = Time.at now.to_i + (time_goal - billable_duration)
-  puts "You have logged %d hours and %d minutes and have %d hours and %d minutes left." % [billable_hours, billable_minutes, hours_remaining, minutes_remaining]
+  nonbillable_hours = nonbillable_duration / 60 / 60
+  nonbillable_minutes = (nonbillable_duration / 60) % 60
+  total_duration = billable_duration + nonbillable_duration
+  total_hours = total_duration / 60 / 60
+  total_minutes = (total_duration / 60) % 60
+  percent_finished = ((total_duration * 1.0) / time_goal) * 100
+  hours_remaining = (time_goal - total_duration) / 60 / 60
+  minutes_remaining = (time_goal - total_duration) / 60 % 60
+  finished_at = Time.at now.to_i + (time_goal - total_duration)
+  puts "You have logged %d hours and %d minutes and have %d hours and %d minutes left." % [total_hours, total_minutes, hours_remaining, minutes_remaining]
   puts "You are %0.2f%% finished with work today." % [percent_finished]
   puts "You will be finished at%s." % [finished_at.strftime("%l:%M %p")]
+  puts "Your work has been %0.2f%% billable today." % [((billable_duration * 1.0) / (billable_duration + nonbillable_duration)) * 100]
 end
 
 main
