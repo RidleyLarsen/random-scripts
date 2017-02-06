@@ -1,0 +1,17 @@
+#!/usr/bin/env ruby
+
+require 'time'
+require 'subprocess'
+
+def main()
+  out = Subprocess.check_output(["timeleft", "-f", "finished"])
+  now = Time.now
+  if (now + 3600).strftime("%l:%M %p") == out
+    Subprocess.call(["./timeleft-notification", "You only have one hour left.", "Work Day"])
+  end
+  if (now + 900).strftime("%l:%M %p") == out
+    Subprocess.call(["./timeleft-notification", "You only have 15 minutes left!", "Work Day"])
+  end
+end
+
+main()

@@ -9,6 +9,7 @@ def main()
   f = open(File.expand_path('~/.timeleft.config'))
   jsonobj = JSON.load(f)
   api_key = jsonobj['TOGGL_API_KEY']
+  _format = "full"
   if jsonobj.has_key? "hours"
     hours = jsonobj["hours"]
   else
@@ -21,11 +22,14 @@ def main()
     opts.on("-h HOURS", "--hours=HOURS", "Hours") do |h|
       hours = h
     end
+
+    opts.on("-f FORMAT", "--format=FORMAT", "Format") do |f|
+      _format = f
+    end
   end.parse!
 
   time_goal = hours * 60 * 60  # 8 hours or 28800 seconds.
   now = Time.now
-  puts "It is now#{now.strftime("%l:%M %p")}."
   t = Time.new(now.year, now.month, now.day).iso8601
   uri = "https://www.toggl.com/api/v8/time_entries?start_date=#{t}"
   response = Unirest.get uri, auth:{:user=>api_key, :password=>"api_token"},
@@ -58,10 +62,16 @@ def main()
   hours_remaining = (time_goal - total_duration) / 60 / 60
   minutes_remaining = (time_goal - total_duration) / 60 % 60
   finished_at = Time.at now.to_i + (time_goal - total_duration)
-  puts "You have logged %d hours and %d minutes and have %d hours and %d minutes left." % [total_hours, total_minutes, hours_remaining, minutes_remaining]
-  puts "You are %0.2f%% finished with work today." % [percent_finished]
-  puts "You will be finished at%s." % [finished_at.strftime("%l:%M %p")]
-  puts "Your work has been %0.2f%% billable today." % [((billable_duration * 1.0) / (billable_duration + nonbillable_duration)) * 100]
+  if _format == "f" or _format == "finished"
+    puts finished_at.strftime("%l:%M %p")
+  end
+  if _format == "full"
+    puts "It is now#{now.strftime("%l:%M %p")}."
+    puts "You have logged %d hours and %d minutes and have %d hours and %d minutes left." % [total_hours, total_minutes, hours_remaining, minutes_remaining]
+    puts "You are %0.2f%% finished with work today." % [percent_finished]
+    puts "You will be finished at%s." % [finished_at.strftime("%l:%M %p")]
+    puts "Your work has been %0.2f%% billable today." % [((billable_duration * 1.0) / (billable_duration + nonbillable_duration)) * 100]
+  end
 end
 
 main
