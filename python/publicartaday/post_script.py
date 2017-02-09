@@ -2,6 +2,7 @@ import facebook
 import requests
 import random
 import json
+from datetime import datetime
 from PIL import Image
 
 MUSEUM_URI = "http://metmuseum.org"
@@ -30,8 +31,9 @@ def main():
     config = load_config()
     graph = facebook.GraphAPI(config["FB_ACCESS_TOKEN"])
     # Most of these params don't change. 'openaccess' == Public Domain.
+    today = datetime.now().weekday()
     params = {
-        "material": config["museum_material"],
+        "material": config["MATERIAL_DAYS"][str(today)],
         "pageSize": 0,
         "perPage": 1,
         "offset": 1,
@@ -53,7 +55,7 @@ def main():
     image_url = "{0}{1}".format(MUSEUM_IMAGE_URI, obj_image_uri)
 
     # This will be the posts's caption on Facebook (or other networks when added.)
-    caption = u"{0} - {1} - {2}{3}".format(obj["title"], obj["description"], MUSEUM_API_URI, obj["url"])
+    caption = u"{0} - {1} - {2}{3}".format(obj["title"], obj["description"], MUSEUM_URI, obj["url"])
 
     # Get, then save the image.
     image_response = requests.get(image_url, stream=True)

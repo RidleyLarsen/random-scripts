@@ -1,4 +1,12 @@
 {
     "FB_ACCESS_TOKEN": "CHANGEME",
-    "museum_material": "Oil paint"
+    "MATERIAL_DAYS": {
+        0: "Oil paint",
+        1: "Photographs",
+        2: "Wood blocks",
+        3: "Reliefs",
+        4: "Color lithographs",
+        5: "Watercolors",
+        6: "Engraving"
+    }
 }
