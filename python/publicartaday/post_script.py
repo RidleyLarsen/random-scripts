@@ -14,11 +14,10 @@ def load_config():
     '''
         Loads configuration file as JSON. See config.json.example for more details.
     '''
-    f = open("config.json", "r")
+    f = open("/home/pi/random-scripts/python/publicartaday/config.json", "r")
     fr = f.read()
     f.close()
     return json.loads(fr)
-
 
 def get_museum_response(params):
     '''
@@ -30,10 +29,11 @@ def get_museum_response(params):
 def main():
     config = load_config()
     graph = facebook.GraphAPI(config["FB_ACCESS_TOKEN"])
+    graph.extend_access_token(config["FB_APP_ID"], config["FB_APP_SECRET"])
     # Most of these params don't change. 'openaccess' == Public Domain.
     today = datetime.now().weekday()
     params = {
-        "material": config["MATERIAL_DAYS"][str(today)],
+        "material": config["MATERIAL_DAYS"][today],
         "pageSize": 0,
         "perPage": 1,
         "offset": 1,
